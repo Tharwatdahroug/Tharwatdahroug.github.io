@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Tharwat Dahroug — Flutter developer building live trading apps for Mashreq, ADIB, Emirates NBD, FAB, Jadwa and SICO.">
+<meta property="og:title" content="Tharwat Dahroug · Flutter Developer">
+<meta property="og:description" content="FinTech Flutter developer: 4+ years, 7+ live apps, 6 Gulf banks and brokerages.">
+<title>Tharwat Dahroug</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: a live "code → app" hero (editor types Flutter code, phone hot-reloads into a trading watchlist) over a drifting field of Dart tokens; one editorial column below. Single deliberate dark theme. */
+:root{
+  --ink:#070b14;
+  --ink-2:#0d1424;
+  --panel:rgba(13,20,36,.82);
+  --line:rgba(110,190,255,.16);
+  --text:#e8eef8;
+  --muted:#93a2bb;
+  --cyan:#3fd0ff;
+  --blue:#1f6fd1;
+  --gold:#ffcb6b;
+  --up:#3ddc97;
+  --down:#ff6b6b;
+  --display:"Big Shoulders Display","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;overflow-x:hidden}
+#field{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:0 64px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.mono{font-family:var(--mono)}
+
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:14px;background:linear-gradient(var(--ink) 55%,transparent)}
+.brand{font-family:var(--mono);font-weight:700;font-size:1rem;text-decoration:none;color:var(--text)}
+.brand b{color:var(--cyan)}
+.navlinks{display:flex;gap:18px;flex-wrap:wrap;font-size:.88rem;font-family:var(--mono)}
+.navlinks a{text-decoration:none;color:var(--muted)}
+.navlinks a:hover{color:var(--cyan)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(24px,4vw,56px);align-items:center;padding-block:clamp(40px,8vh,90px) 20px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 10px var(--up);display:inline-block}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(3.6rem,9vw,7.6rem);line-height:.86;margin:18px 0 6px;text-transform:uppercase;text-wrap:balance}
+h1 .last{display:block;background:linear-gradient(90deg,var(--cyan),#8ae6ff 40%,var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.role{font-family:var(--mono);font-size:clamp(.95rem,1.6vw,1.1rem);color:var(--cyan);min-height:1.6em}
+.role .cursor{display:inline-block;width:.55em;height:1.05em;background:var(--cyan);vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.lead{font-size:clamp(1.05rem,1.8vw,1.25rem);max-width:42ch;margin:18px 0 0;color:var(--text)}
+.lead em{font-style:normal;color:var(--gold)}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.btn{font:600 .92rem/1 var(--body);padding:14px 20px;border-radius:10px;border:1px solid var(--cyan);background:var(--cyan);color:var(--ink);text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--line)}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* code + phone stage */
+.stage{position:relative;min-height:520px}
+.editor{position:relative;width:min(100%,560px);background:#0a1020;border:1px solid var(--line);border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden}
+.bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.bar i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.bar i:nth-child(1){background:#ff5f57}.bar i:nth-child(2){background:#febc2e}.bar i:nth-child(3){background:#28c840}
+.bar span{margin-left:8px}
+pre.code{margin:0;padding:16px 16px 22px 0;font:400 .8rem/1.65 var(--mono);color:#cfd8e6;min-height:330px;white-space:pre;overflow-x:auto;counter-reset:ln}
+pre.code .ln{display:inline-block;width:2.8em;text-align:right;padding-right:1em;color:#3b4a66;user-select:none}
+.k{color:#c792ea}.t{color:#ffcb6b}.f{color:#82aaff}.s{color:#c3e88d}.a{color:#89ddff}.c{color:#56657f}.n{color:#f78c6c}
+.caret{display:inline-block;width:7px;height:1.1em;background:var(--cyan);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+.toast{position:absolute;left:16px;bottom:14px;font-family:var(--mono);font-size:.75rem;background:rgba(63,208,255,.12);border:1px solid rgba(63,208,255,.4);color:var(--cyan);padding:6px 10px;border-radius:8px;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s}
+.toast.on{opacity:1;transform:none}
+
+.phone{position:absolute;right:0;top:70px;width:250px;aspect-ratio:9/19;max-width:100%;background:#05080f;border:2px solid #24324d;border-radius:36px;padding:12px;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 6px rgba(63,208,255,.05)}
+.phone.flash{box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 6px rgba(63,208,255,.35),0 0 60px rgba(63,208,255,.35)}
+.screen{position:relative;height:100%;border-radius:26px;background:linear-gradient(180deg,#0e1830,#09101f);overflow:hidden;display:flex;flex-direction:column;padding:28px 12px 12px}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:70px;height:16px;border-radius:10px;background:#05080f}
+.scr-h{display:flex;justify-content:space-between;align-items:baseline}
+.scr-h b{font-size:.95rem}
+.scr-h small{font-family:var(--mono);font-size:.6rem;color:var(--muted)}
+.tabs{display:flex;gap:6px;margin:8px 0}
+.tabs span{font-family:var(--mono);font-size:.58rem;padding:3px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.tabs span.on{background:var(--cyan);color:var(--ink);border-color:var(--cyan)}
+#chart{width:100%;height:64px;display:block;margin-bottom:6px}
+.rows{display:flex;flex-direction:column;gap:4px;flex:1;min-height:0}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.03);transition:background .4s}
+.row.in{animation:rowin .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rowin{from{transform:translateX(18px)}to{transform:none}}
+.row .sym{font-weight:600;font-size:.72rem}
+.row .ex{font-family:var(--mono);font-size:.55rem;color:var(--muted)}
+.row .px{font-family:var(--mono);font-size:.72rem;text-align:right;font-variant-numeric:tabular-nums}
+.row .ch{font-family:var(--mono);font-size:.58rem;text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}
+.row.fu{background:rgba(61,220,151,.14)}.row.fd{background:rgba(255,107,107,.14)}
+.demo{font-family:var(--mono);font-size:.52rem;color:var(--muted);text-align:center;margin-top:6px}
+
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:36px}
+.stat{background:var(--panel);backdrop-filter:blur(6px);padding:18px 16px}
+.stat b{display:block;font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;color:var(--cyan);font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+
+.ticker{margin:48px calc(-1 * clamp(16px,4vw,40px)) 0;border-block:1px solid var(--line);background:rgba(7,11,20,.75);overflow:hidden;white-space:nowrap}
+.ticker .track{display:inline-flex;gap:40px;padding-block:12px;animation:slide 40s linear infinite;font-family:var(--mono);font-size:.82rem;letter-spacing:.06em;color:var(--muted)}
+.ticker .track i{font-style:normal;color:var(--cyan)}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+section{padding-block:72px 0}
+.shead{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,6vw,4rem);line-height:.95;text-transform:uppercase;margin:0;text-wrap:balance}
+h2 small{display:block;font-family:var(--mono);font-size:.8rem;color:var(--cyan);font-weight:400;margin-bottom:8px;text-transform:none}
+.shead p{color:var(--muted);max-width:46ch;margin:0}
+
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.app{position:relative;background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:14px;transition:transform .35s ease,border-color .35s ease;overflow:hidden}
+.app::before{content:"";position:absolute;inset:-1px;background:radial-gradient(420px 170px at var(--mx,50%) -20%,rgba(63,208,255,.16),transparent 70%);opacity:0;transition:opacity .35s;pointer-events:none}
+.app:hover{transform:translateY(-4px);border-color:rgba(63,208,255,.5)}
+.app:hover::before{opacity:1}
+.app header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.app h3{font-family:var(--display);font-weight:800;font-size:1.9rem;line-height:1;margin:0;text-transform:uppercase}
+.client{font-size:.85rem;color:var(--muted);margin-top:6px}
+.seal{font-family:var(--mono);font-size:.7rem;border:1px solid var(--line);color:var(--gold);padding:5px 8px;border-radius:6px;white-space:nowrap}
+.app ul{margin:0;padding-left:18px;font-size:.95rem}
+.app li{margin-bottom:4px}
+.app li::marker{color:var(--cyan)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:.72rem;padding:4px 9px;border-radius:6px;background:rgba(63,208,255,.06);border:1px solid var(--line);color:var(--text)}
+.chip.x{color:var(--gold);border-color:rgba(255,203,107,.35)}
+.stores{display:flex;gap:14px;flex-wrap:wrap;margin-top:auto;font-size:.85rem}
+.stores a{color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(63,208,255,.35)}
+.stores a:hover{border-color:var(--cyan)}
+
+.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.mini{background:var(--panel);border:1px dashed var(--line);border-radius:16px;padding:20px}
+.mini h4{margin:0 0 6px;font-family:var(--display);font-size:1.4rem;text-transform:uppercase}
+.mini p{margin:0 0 10px;color:var(--muted);font-size:.93rem}
+
+.tl{display:grid;gap:18px}
+.job{display:grid;grid-template-columns:210px minmax(0,1fr);gap:28px;background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:16px;padding:26px}
+.when{font-family:var(--mono);font-size:.82rem;color:var(--cyan)}
+.when b{display:block;font-family:var(--display);font-size:1.9rem;color:var(--text);text-transform:uppercase;line-height:1;margin:8px 0 4px}
+.job h3{margin:0 0 10px;font-size:1.15rem}
+.job ul{margin:0;padding-left:18px}
+.job li{margin-bottom:6px}
+.job li::marker{color:var(--cyan)}
+
+.stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+.group h4{margin:0 0 12px;font-family:var(--mono);font-size:.8rem;color:var(--cyan);font-weight:500}
+
+.teach{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center;background:linear-gradient(120deg,rgba(31,111,209,.28),rgba(13,20,36,.88));border:1px solid var(--line);border-radius:20px;padding:clamp(22px,4vw,40px)}
+.teach .big{font-family:var(--display);font-weight:900;font-size:clamp(4rem,10vw,7rem);line-height:.85;color:var(--cyan)}
+.teach p{margin:0}
+.post{font-family:var(--mono);font-size:.82rem;color:var(--muted);border-left:2px solid var(--cyan);padding-left:14px;margin-top:14px}
+
+.contact h2{font-size:clamp(3rem,9vw,6.5rem)}
+.links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
+.link{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.link div{min-width:0}
+.link small{display:block;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.link span{display:block;overflow-wrap:anywhere;user-select:all}
+.copy{font:600 .8rem/1 var(--body);background:transparent;color:var(--cyan);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;white-space:nowrap;text-decoration:none}
+.copy:hover{border-color:var(--cyan)}
+footer{margin-top:56px;color:var(--muted);font-size:.8rem;font-family:var(--mono);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .stage{min-height:0;display:flex;flex-direction:column;align-items:center;gap:18px}
+  .phone{position:relative;right:auto;top:auto;width:240px}
+  .editor{width:100%}
+}
+@media (max-width:860px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats .stat:last-child{grid-column:1 / -1}
+  .apps,.side,.links{grid-template-columns:minmax(0,1fr)}
+  .stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .job{grid-template-columns:minmax(0,1fr);gap:12px}
+  .teach{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .stack{grid-template-columns:minmax(0,1fr)}
+  .navlinks{display:none}
+  pre.code{font-size:.7rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .ticker .track,.caret,.role .cursor,.row.in{animation:none}
+  .app,.app::before,.toast{transition:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+
+<canvas id="field" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <nav aria-label="Main">
+    <a class="brand" href="#top">tharwat<b>.dart</b></a>
+    <div class="navlinks">
+      <a href="#apps">/apps</a>
+      <a href="#experience">/experience</a>
+      <a href="#stack">/stack</a>
+      <a href="#contact">/contact</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div>
+      <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Open to work · Cairo · Remote or relocation</div>
+      <h1>Tharwat<span class="last">Dahroug</span></h1>
+      <div class="role" aria-live="polite"><span id="role">Flutter Developer</span><span class="cursor" aria-hidden="true"></span></div>
+      <p class="lead">I build the trading apps that <em>six Gulf banks and brokerages</em> put in their clients' hands, wired live to DFM, ADX, NASDAQ Dubai and Tadawul.</p>
+      <div class="cta">
+        <a class="btn" href="#apps">See the apps ↓</a>
+        <button class="btn ghost" type="button" data-copy="sarwatdahroug88@gmail.com">Copy email</button>
+        <a class="btn ghost" href="https://github.com/Tharwatdahroug" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+
+    <div class="stage" aria-label="Animated demo: Flutter code hot-reloading into a trading app">
+      <div class="editor">
+        <div class="bar"><i></i><i></i><i></i><span>lib/features/market/watchlist.dart</span></div>
+        <pre class="code" id="code"></pre>
+        <div class="toast" id="toast">⚡ Hot reload · 312 ms</div>
+      </div>
+      <div class="phone" id="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="scr-h"><b>Watchlist</b><small id="clock">LIVE</small></div>
+          <div class="tabs"><span class="on">DFM</span><span>ADX</span><span>TADAWUL</span></div>
+          <canvas id="chart"></canvas>
+          <div class="rows" id="rows"></div>
+          <div class="demo">UI demo · simulated prices</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats" role="list">
+    <div class="stat" role="listitem"><b>4+</b><span>years shipping Flutter</span></div>
+    <div class="stat" role="listitem"><b>7+</b><span>live production apps</span></div>
+    <div class="stat" role="listitem"><b>6</b><span>banks &amp; brokerages</span></div>
+    <div class="stat" role="listitem"><b>3</b><span>stores: Apple, Google, Huawei</span></div>
+    <div class="stat" role="listitem"><b>86B</b><span>SAR AUM behind Jadwa's app</span></div>
+  </div>
+
+  <div class="ticker" aria-label="Markets my apps trade on">
+    <div class="track">
+      <span><i>●</i> DFM</span><span><i>●</i> ADX</span><span><i>●</i> NASDAQ DUBAI</span><span><i>●</i> TADAWUL</span><span><i>●</i> US MARKETS</span><span><i>{}</i> BLoC</span><span><i>{}</i> CLEAN ARCHITECTURE</span><span><i>◆</i> SCA / CMA COMPLIANT</span>
+      <span><i>●</i> DFM</span><span><i>●</i> ADX</span><span><i>●</i> NASDAQ DUBAI</span><span><i>●</i> TADAWUL</span><span><i>●</i> US MARKETS</span><span><i>{}</i> BLoC</span><span><i>{}</i> CLEAN ARCHITECTURE</span><span><i>◆</i> SCA / CMA COMPLIANT</span>
+    </div>
+  </div>
+
+  <section id="apps">
+    <div class="shead">
+      <h2><small>// shipped to production</small>Live trading apps</h2>
+      <p>Regulated, real-money apps on the App Store, Google Play and Huawei AppGallery. Real-time prices, order management and security hardening that passes bank audits.</p>
+    </div>
+    <div class="apps">
+      <article class="app">
+        <header><div><h3>MashreqTrade UAE</h3><div class="client">Mashreq Bank · Mashreq Securities</div></div><span class="seal">UAE</span></header>
+        <ul>
+          <li>Real-time portfolio, purchasing power and live pricing with instant trade execution</li>
+          <li>Part of the TradeNet Upgrade Programme: faster, more secure, better UX</li>
+          <li>Face ID / Touch ID, price alerts, direct bank-account fund transfers</li>
+        </ul>
+        <div class="chips"><span class="chip x">DFM</span><span class="chip x">ADX</span><span class="chip">BLoC</span><span class="chip">GuardSquare</span><span class="chip">FastLane</span></div>
+        <div class="stores"><a href="https://apps.apple.com/app/id1166470359" target="_blank" rel="noopener">App Store ↗</a></div>
+      </article>
+      <article class="app">
+        <header><div><h3>ADIB Securities</h3><div class="client">Abu Dhabi Islamic Bank · SCA-regulated</div></div><span class="seal">UAE</span></header>
+        <ul>
+          <li>Shari'a-compliant trading across UAE, KSA and US markets</li>
+          <li>Live quotes, interactive charts, watchlists and advanced order types</li>
+          <li>DexGuard + IxGuard hardening for Islamic-finance regulators</li>
+        </ul>
+        <div class="chips"><span class="chip x">UAE</span><span class="chip x">KSA</span><span class="chip x">US</span><span class="chip">DexGuard</span><span class="chip">IxGuard</span></div>
+        <div class="stores"><a href="https://apps.apple.com/app/id6450414140" target="_blank" rel="noopener">App Store ↗</a></div>
+      </article>
+      <article class="app">
+        <header><div><h3>Emirates NBD Securities</h3><div class="client">Emirates NBD · regional brokerage</div></div><span class="seal">UAE</span></header>
+        <ul>
+          <li>One app, four exchanges, live streaming rates</li>
+          <li>Positions with unrealized P&amp;L, historical charts, market news</li>
+          <li>THARAA loyalty integration that rewards every executed trade</li>
+        </ul>
+        <div class="chips"><span class="chip x">DFM</span><span class="chip x">ADX</span><span class="chip x">NASDAQ DUBAI</span><span class="chip x">TADAWUL</span></div>
+        <div class="stores"><a href="https://apps.apple.com/app/id1659916361" target="_blank" rel="noopener">App Store ↗</a></div>
+      </article>
+      <article class="app">
+        <header><div><h3>FABS Trade</h3><div class="client">First Abu Dhabi Bank · UAE's largest bank</div></div><span class="seal">UAE</span></header>
+        <ul>
+          <li>Direct market access with market depth by price and by order</li>
+          <li>Full order lifecycle: place, modify, cancel, 60-day searchable history</li>
+          <li>Runs on iPhone, iPad and Apple-silicon Macs</li>
+        </ul>
+        <div class="chips"><span class="chip x">ADX</span><span class="chip x">DFM</span><span class="chip">Market depth</span><span class="chip">OMS</span></div>
+        <div class="stores"><a href="https://apps.apple.com/app/id6450561983" target="_blank" rel="noopener">App Store ↗</a></div>
+      </article>
+      <article class="app">
+        <header><div><h3>Jadwa Investment</h3><div class="client">SAR 86B AUM · wealth management</div></div><span class="seal">KSA · 2024</span></header>
+        <ul>
+          <li>Launched the same day on Apple, Google and Huawei (June 2024)</li>
+          <li>Tadawul trading, fund subscriptions and redemptions</li>
+          <li>SAR / USD transfers, statements and investment reports</li>
+        </ul>
+        <div class="chips"><span class="chip x">TADAWUL</span><span class="chip">Funds</span><span class="chip">Multi-currency</span><span class="chip">AppGallery</span></div>
+        <div class="stores"><a href="https://apps.apple.com/app/id6474286972" target="_blank" rel="noopener">App Store ↗</a><a href="https://play.google.com/store/apps/details?id=jadwa.invest.app" target="_blank" rel="noopener">Google Play ↗</a></div>
+      </article>
+      <article class="app">
+        <header><div><h3>SICO LIVE KSA</h3><div class="client">SICO Capital · CMA-regulated · USD 7.9B AUM</div></div><span class="seal">KSA</span></header>
+        <ul>
+          <li>Secure access to the Saudi Exchange for retail and institutional clients</li>
+          <li>Market depth, best-performer rankings, multiple watchlists, live news</li>
+          <li>Full security hardening to CMA standards</li>
+        </ul>
+        <div class="chips"><span class="chip x">TADAWUL</span><span class="chip">CMA</span><span class="chip">GuardSquare</span></div>
+        <div class="stores"><a href="https://play.google.com/store/apps/details?id=sico.ksa.einvest.mobile" target="_blank" rel="noopener">Google Play ↗</a></div>
+      </article>
+    </div>
+    <div class="side">
+      <div class="mini">
+        <h4>Check Quick</h4>
+        <p>Enterprise employee-operations system: role-based access across four tiers, check-in/out tracking, automated admin reports, multi-tenant data isolation.</p>
+        <div class="chips"><span class="chip">Flutter</span><span class="chip">Firebase</span><span class="chip">RBAC</span><span class="chip">FCM</span></div>
+      </div>
+      <div class="mini">
+        <h4>S&amp;M HR System</h4>
+        <p>End-to-end HR app: working hours, leave and excuse requests, real-time announcements and company document distribution.</p>
+        <div class="chips"><span class="chip">Flutter</span><span class="chip">Firestore</span><span class="chip">BLoC</span><span class="chip">FCM</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="shead"><h2><small>// git log --author=tharwat</small>Experience</h2></div>
+    <div class="tl">
+      <article class="job">
+        <div class="when">Nov 2023 – Present<b>KnowledgeNet</b>Cairo · Full-time</div>
+        <div>
+          <h3>Flutter Developer · FinTech trading apps</h3>
+          <ul>
+            <li>Joined as the sole mobile developer and moved the mobile stack to Flutter.</li>
+            <li>Architect multi-module apps with feature-first Clean Architecture, SOLID and BLoC/Cubit.</li>
+            <li>Harden apps with DexGuard, IxGuard, SSL pinning and biometrics to meet UAE SCA and Saudi CMA rules.</li>
+            <li>Integrate WebSocket live pricing, payment gateways, FCM and JWT / OAuth2.</li>
+            <li>Automate signing and releases with FastLane and GitHub Actions to three stores at once.</li>
+            <li>Tune real-time screens with DevTools, Dart Isolates, lazy loading and pagination.</li>
+            <li>Run Scrum ceremonies, code reviews and Git-flow; mentor junior developers and interns.</li>
+          </ul>
+        </div>
+      </article>
+      <article class="job">
+        <div class="when">Mar 2021 – Jun 2022<b>TECFY.CO</b>Egypt · Full-time</div>
+        <div>
+          <h3>Flutter Developer</h3>
+          <ul>
+            <li>Shipped cross-platform apps for multiple clients (Android 5.0+, iOS 12+).</li>
+            <li>BLoC, Cubit and Provider with MVVM and Repository patterns.</li>
+            <li>Full Firebase suite: Firestore, Auth, Cloud Functions, FCM, Crashlytics.</li>
+            <li>Pixel-perfect Figma and Adobe XD builds with custom animations.</li>
+            <li>Unit and widget tests with flutter_test and Mockito.</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="shead"><h2><small>// pubspec.yaml</small>Stack</h2></div>
+    <div class="stack">
+      <div class="group"><h4>mobile:</h4><div class="chips"><span class="chip x">Flutter</span><span class="chip x">Dart</span><span class="chip">iOS</span><span class="chip">Android</span><span class="chip">Huawei AppGallery</span></div></div>
+      <div class="group"><h4>architecture:</h4><div class="chips"><span class="chip x">BLoC</span><span class="chip">Cubit</span><span class="chip">Riverpod</span><span class="chip">Provider</span><span class="chip">GetX</span><span class="chip">Clean Architecture</span><span class="chip">SOLID</span><span class="chip">MVVM</span></div></div>
+      <div class="group"><h4>security:</h4><div class="chips"><span class="chip x">GuardSquare</span><span class="chip">DexGuard</span><span class="chip">IxGuard</span><span class="chip">SSL pinning</span><span class="chip">Biometrics</span><span class="chip">JWT</span><span class="chip">OAuth2</span></div></div>
+      <div class="group"><h4>realtime_data:</h4><div class="chips"><span class="chip x">WebSocket</span><span class="chip">REST</span><span class="chip">GraphQL</span><span class="chip">Firebase</span><span class="chip">SQLite</span><span class="chip">Isolates</span></div></div>
+      <div class="group"><h4>ci_cd:</h4><div class="chips"><span class="chip x">FastLane</span><span class="chip">GitHub Actions</span><span class="chip">Bitrise</span><span class="chip">Git-flow</span><span class="chip">Play Console</span><span class="chip">App Store Connect</span></div></div>
+      <div class="group"><h4>quality:</h4><div class="chips"><span class="chip">Unit / widget tests</span><span class="chip">Mockito</span><span class="chip">DevTools</span><span class="chip">Scrum</span><span class="chip">JIRA</span><span class="chip">Figma</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="teach">
+      <div>
+        <div class="big">4.5K</div>
+        <p>developers follow me on LinkedIn, where I teach Flutter in Egyptian Arabic: rendering, BuildContext, RepaintBoundary, FutureBuilder pitfalls and what's new in Flutter.</p>
+      </div>
+      <div>
+        <div class="post">"const بيوفّر عليك الـ rebuild… و RepaintBoundary بيوفّر عليك الـ repaint. الاتنين بيكمّلوا بعض."</div>
+        <div class="post">Suez Canal University · Computer Science · 2021<br>Arabic (native) · English (professional)</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2><small>// await hire(tharwat)</small>Let's build<br>your next app.</h2>
+    <div class="links">
+      <div class="link"><div><small>email</small><span>sarwatdahroug88@gmail.com</span></div><button class="copy" type="button" data-copy="sarwatdahroug88@gmail.com">Copy</button></div>
+      <div class="link"><div><small>phone / whatsapp</small><span>+20 120 890 7983</span></div><button class="copy" type="button" data-copy="+201208907983">Copy</button></div>
+      <div class="link"><div><small>linkedin</small><span>linkedin.com/in/tharwat-dahroug</span></div><a class="copy" href="https://www.linkedin.com/in/tharwat-dahroug" target="_blank" rel="noopener">Open ↗</a></div>
+      <div class="link"><div><small>github</small><span>github.com/Tharwatdahroug</span></div><a class="copy" href="https://github.com/Tharwatdahroug" target="_blank" rel="noopener">Open ↗</a></div>
+    </div>
+    <footer><span>© Tharwat Dahroug · built like a Flutter app</span><span>flutter run --release</span></footer>
+  </section>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* copy buttons */
+  document.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const text = btn.getAttribute('data-copy'), label = btn.textContent;
+      const done = ok => { btn.textContent = ok ? 'Copied' : 'Select the text'; setTimeout(() => btn.textContent = label, 1600); };
+      try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch (e) { done(false); }
+    });
+  });
+  document.querySelectorAll('.app').forEach(card => card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+  }));
+
+  /* rotating role line */
+  const roles = ['Flutter Developer', 'FinTech Mobile Engineer', 'BLoC · Clean Architecture', 'Real-time trading UIs', 'Ships to 3 app stores'];
+  const roleEl = document.getElementById('role');
+  if (!reduce) {
+    let ri = 0, ci = roles[0].length, del = true;
+    setInterval(() => {
+      const w = roles[ri];
+      if (del) { ci--; if (ci <= 0) { del = false; ri = (ri + 1) % roles.length; } }
+      else { ci++; if (ci >= roles[ri].length + 18) del = true; }
+      roleEl.textContent = roles[ri].slice(0, Math.max(0, Math.min(ci, roles[ri].length)));
+    }, 70);
+  }
+
+  /* ---------- typed Flutter code ---------- */
+  const SRC = [
+    [['k','class '],['t','Watchlist '],['k','extends '],['t','StatelessWidget'],['',' {']],
+    [['','  '],['k','const '],['t','Watchlist'],['','({'],['k','super'],['','.key});']],
+    [['','']],
+    [['','  '],['a','@override']],
+    [['','  '],['t','Widget '],['f','build'],['','('],['t','BuildContext '],['','context) {']],
+    [['','    '],['k','return '],['t','BlocBuilder'],['','<'],['t','MarketCubit'],['',', '],['t','MarketState'],['','>(']],
+    [['','      '],['a','builder'],['',': (context, state) => '],['t','ListView'],['','.'],['f','builder'],['','(']],
+    [['','        '],['a','itemCount'],['',': state.quotes.length,']],
+    [['','        '],['a','itemBuilder'],['',': (_, i) => '],['t','QuoteTile'],['','(']],
+    [['','          '],['a','quote'],['',': state.quotes[i],']],
+    [['','          '],['a','onTap'],['',': () => context.'],['f','push'],['','('],['s',"'/trade'"],['','),']],
+    [['','        ),']],
+    [['','      ),']],
+    [['','    );']],
+    [['','  }']],
+    [['','}']],
+    [['c','// streams live ticks from DFM · ADX · Tadawul']]
+  ];
+  const codeEl = document.getElementById('code');
+  const toast = document.getElementById('toast');
+  const phone = document.getElementById('phone');
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const total = SRC.reduce((n, line) => n + line.reduce((m, [, t]) => m + t.length, 0) + 1, 0);
+
+  function render(chars, caret) {
+    let left = chars, html = '';
+    SRC.forEach((line, li) => {
+      if (left < 0) return;
+      let row = `<span class="ln">${li + 1}</span>`;
+      for (const [cls, text] of line) {
+        if (left <= 0) break;
+        const part = text.slice(0, left); left -= part.length;
+        row += cls ? `<span class="${cls}">${esc(part)}</span>` : esc(part);
+      }
+      const lineDone = left > 0;
+      if (!lineDone && caret) row += '<span class="caret"></span>';
+      html += row + '\n';
+      left -= 1;
+      if (!lineDone) left = -1;
+    });
+    codeEl.innerHTML = html;
+  }
+
+  /* ---------- phone watchlist (simulated ticks) ---------- */
+  const quotes = [
+    { s: 'EMAAR', e: 'DFM', p: 14.62 }, { s: 'FAB', e: 'ADX', p: 16.18 }, { s: 'ARAMCO', e: 'TADAWUL', p: 27.35 },
+    { s: 'DIB', e: 'DFM', p: 7.41 }, { s: 'ALDAR', e: 'ADX', p: 8.96 }, { s: 'STC', e: 'TADAWUL', p: 41.2 }
+  ].map(q => ({ ...q, o: q.p }));
+  const rowsEl = document.getElementById('rows');
+  function renderRows(animate) {
+    rowsEl.innerHTML = quotes.map((q, i) => {
+      const ch = (q.p - q.o) / q.o * 100, cls = ch >= 0 ? 'up' : 'down';
+      return `<div class="row${animate ? ' in' : ''}" style="animation-delay:${i * 70}ms" data-i="${i}">
+        <span class="sym">${q.s}</span><span class="px">${q.p.toFixed(2)}</span>
+        <span class="ex">${q.e}</span><span class="ch ${cls}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</span></div>`;
+    }).join('');
+  }
+  renderRows(false);
+  function tick() {
+    const i = Math.floor(Math.random() * quotes.length), q = quotes[i];
+    const d = q.p * (Math.random() - .48) * .006;
+    q.p = Math.max(.5, q.p + d);
+    const row = rowsEl.querySelector(`[data-i="${i}"]`);
+    if (!row) return;
+    const ch = (q.p - q.o) / q.o * 100, cls = ch >= 0 ? 'up' : 'down';
+    row.querySelector('.px').textContent = q.p.toFixed(2);
+    const c = row.querySelector('.ch'); c.textContent = `${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%`; c.className = 'ch ' + cls;
+    row.classList.remove('fu', 'fd'); void row.offsetWidth; row.classList.add(d >= 0 ? 'fu' : 'fd');
+    setTimeout(() => row.classList.remove('fu', 'fd'), 450);
+  }
+
+  /* mini chart */
+  const ch = document.getElementById('chart'), cx = ch.getContext('2d');
+  let series = Array.from({ length: 60 }, (_, i) => 50 + Math.sin(i / 6) * 8 + Math.random() * 4);
+  function sizeChart() { const r = ch.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); ch.width = r.width * d; ch.height = r.height * d; cx.setTransform(d, 0, 0, d, 0, 0); }
+  function drawChart() {
+    const w = ch.clientWidth, h = ch.clientHeight; if (!w) return;
+    cx.clearRect(0, 0, w, h);
+    const min = Math.min(...series) - 2, max = Math.max(...series) + 2;
+    const X = i => i / (series.length - 1) * w, Y = v => h - (v - min) / (max - min) * h;
+    cx.strokeStyle = 'rgba(110,190,255,.08)'; cx.lineWidth = 1;
+    for (let g = 1; g < 4; g++) { cx.beginPath(); cx.moveTo(0, h * g / 4); cx.lineTo(w, h * g / 4); cx.stroke(); }
+    const grad = cx.createLinearGradient(0, 0, 0, h); grad.addColorStop(0, 'rgba(61,220,151,.35)'); grad.addColorStop(1, 'rgba(61,220,151,0)');
+    cx.beginPath(); series.forEach((v, i) => i ? cx.lineTo(X(i), Y(v)) : cx.moveTo(X(i), Y(v)));
+    cx.lineTo(w, h); cx.lineTo(0, h); cx.closePath(); cx.fillStyle = grad; cx.fill();
+    cx.beginPath(); series.forEach((v, i) => i ? cx.lineTo(X(i), Y(v)) : cx.moveTo(X(i), Y(v)));
+    cx.strokeStyle = '#3ddc97'; cx.lineWidth = 1.6; cx.stroke();
+    const lx = X(series.length - 1), ly = Y(series[series.length - 1]);
+    cx.fillStyle = '#3ddc97'; cx.beginPath(); cx.arc(lx - 2, ly, 2.6, 0, Math.PI * 2); cx.fill();
+  }
+  sizeChart(); drawChart();
+  addEventListener('resize', () => { sizeChart(); drawChart(); });
+
+  /* ---------- code → hot reload loop ---------- */
+  if (reduce) {
+    render(total, false);
+  } else {
+    let n = 0;
+    const typeLoop = () => {
+      n += 2 + Math.floor(Math.random() * 2);
+      if (n >= total) {
+        render(total, true);
+        toast.classList.add('on'); phone.classList.add('flash');
+        renderRows(true);
+        setTimeout(() => phone.classList.remove('flash'), 700);
+        setTimeout(() => { toast.classList.remove('on'); n = 0; setTimeout(typeLoop, 400); }, 5200);
+        return;
+      }
+      render(n, true);
+      setTimeout(typeLoop, 28);
+    };
+    render(0, true);
+    setTimeout(typeLoop, 600);
+    setInterval(tick, 650);
+    setInterval(() => {
+      const last = series[series.length - 1];
+      series.push(Math.max(20, last + (Math.random() - .46) * 3)); series.shift(); drawChart();
+    }, 400);
+  }
+
+  /* ---------- background: drifting Dart tokens + node network ---------- */
+  const cv = document.getElementById('field'), ctx = cv.getContext('2d');
+  let W = 0, H = 0;
+  function resize() { const d = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0); }
+  resize(); addEventListener('resize', resize);
+  const WORDS = ['Widget build()', 'setState', 'const', 'BlocBuilder', 'Stream<Quote>', 'await', 'async*', 'StatelessWidget', 'Cubit', 'emit(state)', 'WebSocket', 'Isolate.run', 'ListView.builder', 'Riverpod', 'flutter pub get', 'fastlane ios release', 'context.push', 'RepaintBoundary', 'GuardSquare', '@override', 'final', 'Future<void>', 'BuildContext', 'hot reload ⚡'];
+  const count = () => W < 640 ? 14 : 26;
+  let toks = [];
+  function seed() {
+    toks = Array.from({ length: count() }, () => ({
+      w: WORDS[Math.floor(Math.random() * WORDS.length)],
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - .5) * .25, vy: -(.15 + Math.random() * .3),
+      a: .08 + Math.random() * .16, size: 11 + Math.random() * 5
+    }));
+  }
+  seed(); addEventListener('resize', seed);
+  const nodes = Array.from({ length: 46 }, () => ({ x: Math.random(), y: Math.random(), vx: (Math.random() - .5) * .0006, vy: (Math.random() - .5) * .0006 }));
+  let mouse = { x: -999, y: -999 };
+  addEventListener('pointermove', e => { mouse = { x: e.clientX, y: e.clientY }; }, { passive: true });
+
+  function drawField(now) {
+    const g = ctx.createRadialGradient(W * .75, H * .2, 0, W * .75, H * .2, Math.max(W, H));
+    g.addColorStop(0, '#0f1d3a'); g.addColorStop(.55, '#070b14'); g.addColorStop(1, '#070b14');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    /* grid */
+    ctx.strokeStyle = 'rgba(110,190,255,.045)'; ctx.lineWidth = 1;
+    const step = 48, off = (now / 60) % step;
+    for (let x = -step; x < W + step; x += step) { ctx.beginPath(); ctx.moveTo(x + off * 0, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = -step + off; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    /* network */
+    const P = nodes.map(n => ({ x: n.x * W, y: n.y * H }));
+    for (let i = 0; i < P.length; i++) {
+      for (let j = i + 1; j < P.length; j++) {
+        const d = Math.hypot(P[i].x - P[j].x, P[i].y - P[j].y);
+        if (d < 140) { ctx.strokeStyle = `rgba(63,208,255,${(1 - d / 140) * .12})`; ctx.beginPath(); ctx.moveTo(P[i].x, P[i].y); ctx.lineTo(P[j].x, P[j].y); ctx.stroke(); }
+      }
+      const dm = Math.hypot(P[i].x - mouse.x, P[i].y - mouse.y);
+      if (dm < 180) { ctx.strokeStyle = `rgba(63,208,255,${(1 - dm / 180) * .5})`; ctx.beginPath(); ctx.moveTo(P[i].x, P[i].y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(63,208,255,.5)'; ctx.fillRect(P[i].x - 1, P[i].y - 1, 2, 2);
+    }
+    /* tokens */
+    for (const t of toks) {
+      ctx.font = `500 ${t.size}px "JetBrains Mono", monospace`;
+      const near = Math.hypot(t.x - mouse.x, t.y - mouse.y) < 160;
+      ctx.fillStyle = near ? `rgba(255,203,107,${Math.min(.9, t.a * 4)})` : `rgba(140,200,255,${t.a})`;
+      ctx.fillText(t.w, t.x, t.y);
+    }
+  }
+  function frame(now) {
+    for (const n of nodes) { n.x += n.vx; n.y += n.vy; if (n.x < 0 || n.x > 1) n.vx *= -1; if (n.y < 0 || n.y > 1) n.vy *= -1; }
+    for (const t of toks) { t.x += t.vx; t.y += t.vy; if (t.y < -20) { t.y = H + 20; t.x = Math.random() * W; } }
+    drawField(now);
+    requestAnimationFrame(frame);
+  }
+  if (reduce) { drawField(0); addEventListener('resize', () => drawField(0)); }
+  else requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
